@@ -14,7 +14,8 @@ app.post('/todo', async(req, res) => {
         
         await todo.create({
             title: parsedPayLoad.title,
-            description: parsedPayLoad.description
+            description: parsedPayLoad.description,
+            isCompleted:false
         });
 
         res.status(200).json({
@@ -26,13 +27,32 @@ app.post('/todo', async(req, res) => {
         })
     }
 })
-app.get('/todo', (req, res) => {
-    
+app.get('/todo', async(req, res) => {
+    const renderedTodos = await todo.find({});
+    if (!renderedTodos) {
+        res.status(411).json({
+            msg: "No todos found"
+        });
+    } else {
+        res.status(400).json({
+            renderedTodos
+        })
+    }
 })
-app.put('/todo', (req, res) => {
+
+app.put('/completed', async(req, res) => {
     try {
         const updatePayLoad = req.body;
-        const parsedPayLoad = updatePayLoad.safeParse(updatePayLoad)
+        const parsedPayLoad = updatePayLoad.safeParse(updatePayLoad);
+
+        await todo.update({
+            _id: req.body.id,
+        }, {
+            isCompleted: true
+        })
+        res.json({
+            msg: 'todo marked as done'
+        })
     } catch (error) {
         res.status(411).json({
             msg: 'Invalid input'
